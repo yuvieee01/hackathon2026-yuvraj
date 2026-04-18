@@ -92,5 +92,23 @@ class TicketPlanner:
         elif event_type == "missing_data":
             self.current_confidence -= 0.15
             
+        # bounded between 0 and 1
         self.current_confidence = max(0.0, min(1.0, self.current_confidence))
         return self.current_confidence
+
+    def get_classification(self) -> Dict[str, Any]:
+        if self.urgency >= 0.8:
+            priority = "critical"
+        elif self.urgency >= 0.5:
+            priority = "high"
+        elif self.urgency >= 0.3:
+            priority = "medium"
+        else:
+            priority = "low"
+            
+        return {
+            "intent": self.intent,
+            "urgency_score": round(self.urgency, 2),
+            "priority": priority,
+            "confidence": round(self.base_confidence, 4)
+        }

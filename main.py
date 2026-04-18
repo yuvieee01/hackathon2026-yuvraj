@@ -44,8 +44,8 @@ async def main():
     total_time = time.time() - start_time
     
     total_processed = len(results)
-    resolved = sum(1 for r in results if r.get("status") == "resolved" and r.get("final_action") == "resolved")
-    escalated = sum(1 for r in results if r.get("status") == "resolved" and r.get("final_action") == "escalated")
+    resolved = sum(1 for r in results if r.get("status") == "resolved" and str(r.get("final_action", "")).startswith("resolved"))
+    escalated = sum(1 for r in results if r.get("status") == "resolved" and str(r.get("final_action", "")).startswith("escalated"))
     failed = total_processed - resolved - escalated
     avg_time = sum(r.get("total_duration_ms", 0) for r in results) / total_processed if total_processed else 0
     
