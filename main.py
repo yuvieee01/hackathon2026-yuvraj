@@ -6,6 +6,7 @@ import sys
 import config
 from utils.helpers import read_json_file
 from agent import SupportAgent
+from logger import audit_logger
 
 async def process_with_semaphore(ticket, semaphore, agent):
     async with semaphore:
@@ -42,19 +43,17 @@ async def main():
     results = await asyncio.gather(*tasks)
     
     total_time = time.time() - start_time
+    avg_time = sum(r.get("total_duration_ms", 0) for r in results) / len(results) if results else 0
     
-    total_processed = len(results)
-    resolved = sum(1 for r in results if r.get("status") == "resolved" and str(r.get("final_action", "")).startswith("resolved"))
-    escalated = sum(1 for r in results if r.get("status") == "resolved" and str(r.get("final_action", "")).startswith("escalated"))
-    failed = total_processed - resolved - escalated
-    avg_time = sum(r.get("total_duration_ms", 0) for r in results) / total_processed if total_processed else 0
+    summary = audit_logger.get_summary(current_run_count=len(results))
     
     print("\n--- Final Summary Report ---")
-    print(f"Total Processed: {total_processed}")
-    print(f"Resolved:        {resolved}")
-    print(f"Escalated:       {escalated}")
-    print(f"Failed/Timeout:  {failed}")
+    print(f"Total Processed: {summary.get('total_tickets')}")
+    print(f"Resolved:        {summary.get('resolved')}")
+    print(f"Escalated:       {summary.get('escalated')}")
+    print(f"Failed/Timeout:  {summary.get('failed')}")
     print(f"Average Time:    {avg_time:.2f} ms")
+    print(f"Avg Steps/Ticket: {summary.get('avg_steps_per_ticket')}")
     print(f"Total Run Time:  {total_time:.2f} s")
     print("----------------------------")
 

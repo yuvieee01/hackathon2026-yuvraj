@@ -7,3 +7,8 @@ TOOL_FAILURE_RATE = 0.20
 MAX_CONCURRENT_TICKETS = 10
 MAX_REASONING_STEPS = 10
 MIN_TOOL_CALLS = 3
+
+class AgentConfig:
+    audit_log_file = "logs/audit_log.json"
+
+agent_config = AgentConfig()
