@@ -6,7 +6,7 @@ from typing import Dict, Any
 class AsyncJSONLogger:
     def __init__(self, log_path: str = "logs/audit_log.json"):
         self.log_path = log_path
-        self._lock = asyncio.Lock()
+        self._lock = None
         
         os.makedirs(os.path.dirname(self.log_path), exist_ok=True)
 
@@ -24,8 +24,11 @@ class AsyncJSONLogger:
         
         log_entry = {k: audit_data.get(k) for k in required_keys}
         
+        if self._lock is None:
+            self._lock = asyncio.Lock()
+            
         async with self._lock:
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             await loop.run_in_executor(None, self._write_log, log_entry)
             
     def _write_log(self, log_entry: Dict[str, Any]):
